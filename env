@@ -1,0 +1,47 @@
+#--------------------------------------------------------------------
+# ENVIRONMENT
+#--------------------------------------------------------------------
+CI_ENVIRONMENT = development  # Set this to 'production' in a production environment.
+
+#--------------------------------------------------------------------
+# APP
+#--------------------------------------------------------------------
+app.baseURL = 'http://localhost/ci-jobqueue'  # Set the base URL for your app.
+
+#--------------------------------------------------------------------
+# DATABASE
+#--------------------------------------------------------------------
+database.default.hostname = localhost  # The hostname of your MySQL server
+database.default.database = ci_jobqueue  # The name of the database you want to connect to
+database.default.username = root  # Your database username
+database.default.password = root  # Your database password (change as needed)
+database.default.DBDriver = MySQLi  # The database driver (MySQLi for MySQL)
+database.default.DBPrefix =  # You can set a table prefix here if needed
+database.default.port = 3306  # The port of your MySQL server (default is 3306)
+
+# Uncomment and configure this for testing (optional)
+# database.tests.hostname = localhost
+# database.tests.database = ci4_test
+# database.tests.username = root
+# database.tests.password = root
+# database.tests.DBDriver = MySQLi
+# database.tests.DBPrefix =
+# database.tests.charset = utf8mb4
+# database.tests.DBCollat = utf8mb4_general_ci
+# database.tests.port = 3306
+
+#--------------------------------------------------------------------
+# ENCRYPTION
+#--------------------------------------------------------------------
+# encryption.key =  # Set your encryption key if you use encryption.
+
+#--------------------------------------------------------------------
+# SESSION
+#--------------------------------------------------------------------
+# session.driver = 'CodeIgniter\Session\Handlers\FileHandler'
+# session.savePath = null  # Set the session save path if needed.
+
+#--------------------------------------------------------------------
+# LOGGER
+#--------------------------------------------------------------------
+# logger.threshold = 4  # Set the logging level (0 = None, 4 = All, etc.)
