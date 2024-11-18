@@ -18,7 +18,7 @@ class JobQueueController extends Controller
     {
         $job_data = array(
             'job_name' => 'send_email',
-            'job_data' => json_encode(array('email' => 'ehteshamali1456@gmail.com', 'message' => 'Welcome to our service!'))
+            'job_data' => json_encode(array('email' => 'test@example.com', 'message' => 'Welcome to our service!'))
         );
 
         // Add job to queue using the model
