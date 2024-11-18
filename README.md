@@ -1,68 +1,212 @@
-# CodeIgniter 4 Application Starter
+CodeIgniter Job Queue Example
+This project demonstrates how to create a job queue system in CodeIgniter 4.5.5, allowing you to add jobs to a queue and process them using a custom CLI command.
 
-## What is CodeIgniter?
+Table of Contents
+Requirements
+Installation
+Setup
+Creating the Database Table
+Creating the Job Model
+Creating a Controller to Add Jobs
+Creating the Console Command
+Using the Job Queue
+Requirements
+CodeIgniter 4.5.5
+PHP 7.4 or later
+MySQL (or compatible database)
+Installation
+Clone the repository (or create a new CodeIgniter project):
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+bash
+Copy code
+git clone https://github.com/yourusername/ci-jobqueue.git
+cd ci-jobqueue
+Install dependencies:
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+bash
+Copy code
+composer install
+Set up the environment file:
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+bash
+Copy code
+cp env .env
+Edit the .env file to set your database credentials and environment settings:
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+plaintext
+Copy code
+CI_ENVIRONMENT = development
+app.baseURL = 'http://localhost/ci-jobqueue'
 
-## Installation & updates
+database.default.hostname = localhost
+database.default.database = ci_jobqueue
+database.default.username = root
+database.default.password = your_password
+database.default.DBDriver = MySQLi
+Setup
+To manage jobs in the queue, you’ll need to create a database table, a model for interacting with the database, a controller to add jobs, and a custom CLI command to process jobs.
 
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
+1. Creating the Database Table
+Create a job_queue table in your database to store job data and statuses. You can execute the following SQL command in your database:
 
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
+sql
+Copy code
+CREATE TABLE job_queue (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    job_name VARCHAR(255) NOT NULL,
+    job_data TEXT,
+    status ENUM('pending', 'processing', 'completed') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+This table stores:
 
-## Setup
+job_name: the name/type of the job.
+job_data: JSON-encoded job data.
+status: the job's status (pending, processing, or completed).
+created_at and updated_at: timestamps for tracking job creation and updates.
+2. Creating the Job Model
+Create a model, JobQueueModel, to interact with the job_queue table.
 
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
+Create a file named JobQueueModel.php in app/Models/ with the following content:
 
-## Important Change with index.php
+php
+Copy code
+<?php
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+namespace App\Models;
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+use CodeIgniter\Model;
 
-**Please** read the user guide for a better explanation of how CI4 works!
+class JobQueueModel extends Model
+{
+    protected $table = 'job_queue';
+    protected $primaryKey = 'id';
+    protected $allowedFields = ['job_name', 'job_data', 'status'];
 
-## Repository Management
+    public function add_to_queue($job_data)
+    {
+        $job_data['status'] = 'pending';
+        return $this->insert($job_data);
+    }
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
+    public function get_pending_job()
+    {
+        return $this->where('status', 'pending')
+                    ->orderBy('id', 'ASC')
+                    ->first();
+    }
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
+    public function update_job_status($job_id, $status)
+    {
+        return $this->update($job_id, ['status' => $status]);
+    }
+}
+3. Creating a Controller to Add Jobs
+Create a controller, JobQueueController, to add jobs to the queue.
 
-## Server Requirements
+Create a file named JobQueueController.php in app/Controllers/ with the following content:
 
-PHP version 8.1 or higher is required, with the following extensions installed:
+php
+Copy code
+<?php
 
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
+namespace App\Controllers;
 
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - If you are still using PHP 7.4 or 8.0, you should upgrade immediately.
-> - The end of life date for PHP 8.1 will be December 31, 2025.
+use CodeIgniter\Controller;
+use App\Models\JobQueueModel;
 
-Additionally, make sure that the following extensions are enabled in your PHP:
+class JobQueueController extends Controller
+{
+    public function add_job()
+    {
+        $jobModel = new JobQueueModel();
 
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+        $job_data = [
+            'job_name' => 'send_email',
+            'job_data' => json_encode(['email' => 'test@example.com', 'message' => 'Welcome to our service!'])
+        ];
+
+        $jobModel->add_to_queue($job_data);
+        echo "Job added to queue.";
+    }
+}
+Define a route for adding a job in app/Config/Routes.php:
+
+php
+Copy code
+$routes->get('jobqueue/add', 'JobQueueController::add_job');
+Now, you can add a job to the queue by visiting http://localhost/ci-jobqueue/jobqueue/add.
+
+4. Creating the Console Command
+Create a custom command to process jobs in the queue.
+
+Create a file named ProcessJobQueue.php in app/Commands/:
+
+php
+Copy code
+<?php
+
+namespace App\Commands;
+
+use CodeIgniter\CLI\BaseCommand;
+use CodeIgniter\CLI\CLI;
+use App\Models\JobQueueModel;
+
+class ProcessJobQueue extends BaseCommand
+{
+    protected $group       = 'JobQueue';
+    protected $name        = 'jobqueue:process';
+    protected $description = 'Processes the next job in the queue.';
+
+    public function run(array $params)
+    {
+        $jobModel = new JobQueueModel();
+        $job = $jobModel->get_pending_job();
+
+        if ($job) {
+            CLI::write("Processing job: " . $job['job_name'], 'green');
+
+            $jobModel->update_job_status($job['id'], 'processing');
+
+            $this->process_send_email(json_decode($job['job_data'], true));
+
+            $jobModel->update_job_status($job['id'], 'completed');
+            CLI::write("Job processed successfully.", 'green');
+        } else {
+            CLI::write("No pending jobs in the queue.", 'yellow');
+        }
+    }
+
+    private function process_send_email($data)
+    {
+        CLI::write("Sending email to: " . $data['email'] . " with message: " . $data['message']);
+    }
+}
+Register the command in app/Config/Commands.php:
+
+php
+Copy code
+$commands['jobqueue:process'] = App\Commands\ProcessJobQueue::class;
+5. Using the Job Queue
+To add a job: Visit the following URL in your browser to add a job to the queue:
+
+arduino
+Copy code
+http://localhost/ci-jobqueue/jobqueue/add
+To process a job: Run the following command in the terminal:
+
+bash
+Copy code
+php spark jobqueue:process
+This command checks for pending jobs, processes the first pending job, and updates the job’s status to completed.
+
+Conclusion
+This guide provides a basic job queue setup in CodeIgniter, allowing you to queue and process jobs via the command line. You can expand this system to handle different job types and more complex workflows.
+
+
+
+
+
+
+
