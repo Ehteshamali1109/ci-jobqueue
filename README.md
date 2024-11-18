@@ -1,56 +1,62 @@
-CodeIgniter Job Queue Example
+# CodeIgniter Job Queue Example
+
 This project demonstrates how to create a job queue system in CodeIgniter 4.5.5, allowing you to add jobs to a queue and process them using a custom CLI command.
 
-Table of Contents
-Requirements
-Installation
-Setup
-Creating the Database Table
-Creating the Job Model
-Creating a Controller to Add Jobs
-Creating the Console Command
-Using the Job Queue
-Requirements
-CodeIgniter 4.5.5
-PHP 7.4 or later
-MySQL (or compatible database)
-Installation
-Clone the repository (or create a new CodeIgniter project):
+## Table of Contents
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Setup](#setup)
+  - [Creating the Database Table](#creating-the-database-table)
+  - [Creating the Job Model](#creating-the-job-model)
+  - [Creating a Controller to Add Jobs](#creating-a-controller-to-add-jobs)
+  - [Creating the Console Command](#creating-the-console-command)
+  - [Using the Job Queue](#using-the-job-queue)
 
-bash
-Copy code
-git clone https://github.com/yourusername/ci-jobqueue.git
-cd ci-jobqueue
-Install dependencies:
+## Requirements
+- CodeIgniter 4.5.5
+- PHP 7.4 or later
+- MySQL (or compatible database)
 
-bash
-Copy code
-composer install
-Set up the environment file:
+## Installation
+1. Clone the repository (or create a new CodeIgniter project):
 
-bash
-Copy code
-cp env .env
-Edit the .env file to set your database credentials and environment settings:
+    ```bash
+    git clone https://github.com/yourusername/ci-jobqueue.git
+    cd ci-jobqueue
+    ```
 
-plaintext
-Copy code
-CI_ENVIRONMENT = development
-app.baseURL = 'http://localhost/ci-jobqueue'
+2. Install dependencies:
 
-database.default.hostname = localhost
-database.default.database = ci_jobqueue
-database.default.username = root
-database.default.password = your_password
-database.default.DBDriver = MySQLi
-Setup
+    ```bash
+    composer install
+    ```
+
+3. Set up the environment file:
+
+    ```bash
+    cp env .env
+    ```
+
+4. Edit the `.env` file to set your database credentials and environment settings:
+
+    ```
+    CI_ENVIRONMENT = development
+    app.baseURL = 'http://localhost/ci-jobqueue'
+
+    database.default.hostname = localhost
+    database.default.database = ci_jobqueue
+    database.default.username = root
+    database.default.password = your_password
+    database.default.DBDriver = MySQLi
+    ```
+
+## Setup
 To manage jobs in the queue, you’ll need to create a database table, a model for interacting with the database, a controller to add jobs, and a custom CLI command to process jobs.
 
-1. Creating the Database Table
-Create a job_queue table in your database to store job data and statuses. You can execute the following SQL command in your database:
+### Creating the Database Table
+Create a `job_queue` table in your database to store job data and statuses. You can execute the following SQL command in your database:
 
-sql
-Copy code
+```sql
 CREATE TABLE job_queue (
     id INT AUTO_INCREMENT PRIMARY KEY,
     job_name VARCHAR(255) NOT NULL,
