@@ -65,19 +65,19 @@ CREATE TABLE job_queue (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+```
 This table stores:
 
-job_name: the name/type of the job.
-job_data: JSON-encoded job data.
-status: the job's status (pending, processing, or completed).
-created_at and updated_at: timestamps for tracking job creation and updates.
-2. Creating the Job Model
+- job_name: the name/type of the job.
+- job_data: JSON-encoded job data.
+- status: the job's status (pending, processing, or completed).
+- created_at and updated_at: timestamps for tracking job creation and updates.
+### 2. Creating the Job Model
 Create a model, JobQueueModel, to interact with the job_queue table.
 
 Create a file named JobQueueModel.php in app/Models/ with the following content:
 
-php
-Copy code
+```php
 <?php
 
 namespace App\Models;
@@ -108,13 +108,14 @@ class JobQueueModel extends Model
         return $this->update($job_id, ['status' => $status]);
     }
 }
-3. Creating a Controller to Add Jobs
+```
+### 3. Creating a Controller to Add Jobs
 Create a controller, JobQueueController, to add jobs to the queue.
 
 Create a file named JobQueueController.php in app/Controllers/ with the following content:
 
-php
-Copy code
+```php
+
 <?php
 
 namespace App\Controllers;
@@ -137,20 +138,20 @@ class JobQueueController extends Controller
         echo "Job added to queue.";
     }
 }
+```
 Define a route for adding a job in app/Config/Routes.php:
 
-php
-Copy code
+```php
 $routes->get('jobqueue/add', 'JobQueueController::add_job');
+```
 Now, you can add a job to the queue by visiting http://localhost/ci-jobqueue/jobqueue/add.
 
-4. Creating the Console Command
+### 4. Creating the Console Command
 Create a custom command to process jobs in the queue.
 
 Create a file named ProcessJobQueue.php in app/Commands/:
 
-php
-Copy code
+```php
 <?php
 
 namespace App\Commands;
@@ -189,30 +190,24 @@ class ProcessJobQueue extends BaseCommand
         CLI::write("Sending email to: " . $data['email'] . " with message: " . $data['message']);
     }
 }
+```
 Register the command in app/Config/Commands.php:
 
-php
-Copy code
+```php
 $commands['jobqueue:process'] = App\Commands\ProcessJobQueue::class;
-5. Using the Job Queue
+```
+### 5. Using the Job Queue
 To add a job: Visit the following URL in your browser to add a job to the queue:
 
-arduino
-Copy code
+```arduino
 http://localhost/ci-jobqueue/jobqueue/add
+```
 To process a job: Run the following command in the terminal:
 
-bash
-Copy code
+```bash
 php spark jobqueue:process
+```
 This command checks for pending jobs, processes the first pending job, and updates the job’s status to completed.
 
-Conclusion
+### Conclusion
 This guide provides a basic job queue setup in CodeIgniter, allowing you to queue and process jobs via the command line. You can expand this system to handle different job types and more complex workflows.
-
-
-
-
-
-
-
